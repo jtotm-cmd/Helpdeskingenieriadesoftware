@@ -1,115 +1,36 @@
-# Helpdeskingenieriadesoftware
-En este repositorio se colocara los archivos solicitados para la presentación del proyecto
-# Sistema Automatizado de Help Desk con n8n
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Descripción
+## Getting Started
 
-Este proyecto consiste en un sistema automatizado de Help Desk orientado a empresas de venta de software. La solución utiliza n8n para automatización de workflows, PostgreSQL como base de datos y Docker para despliegue local mediante contenedores.
-
-El sistema permite:
-
-* Recepción automática de tickets
-* Clasificación de prioridad
-* Registro de incidencias
-* Manejo centralizado de errores
-* Generación automática de reportes
-
----
-
-# Tecnologías utilizadas
-
-* n8n
-* Docker
-* PostgreSQL
-* React + Vite
-* ESLint
-* MinIO
-
----
-
-# Requisitos
-
-* Docker
-* Docker Compose
-* Git
-
----
-
-# Instalación
-
-Clonar el repositorio:
+First, run the development server:
 
 ```bash
-git clone https://github.com/USUARIO/helpdesk-n8n.git
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Ingresar al proyecto:
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-```bash
-cd helpdesk-n8n
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-Levantar contenedores:
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-```bash
-docker compose up -d
-```
+## Learn More
 
----
+To learn more about Next.js, take a look at the following resources:
 
-# Ejecución
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Servicios disponibles:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-| Servicio  | URL                   |
-| --------- | --------------------- |
-| Frontend  | http://localhost:3000 |
-| Dashboard | http://localhost:3001 |
-| n8n       | http://localhost:5678 |
+## Deploy on Vercel
 
----
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-# Workflows incluidos
-
-## 1. Ticket Ingest Flow
-
-Recibe tickets mediante webhook y almacena la información en PostgreSQL.
-
-## 2. Error Global Handler
-
-Captura errores globales y los registra en base de datos.
-
-## 3. Weekly Ticket Report
-
-Genera reportes automáticos semanales en formato CSV.
-
----
-
-# Uso del sistema
-
-1. Acceder al frontend
-2. Crear ticket
-3. Verificar almacenamiento en PostgreSQL
-4. Revisar reportes automáticos
-5. Consultar logs y errores
-
----
-
-# Pruebas realizadas
-
-* Prueba de creación de tickets
-* Prueba de clasificación automática
-* Prueba de generación de reportes
-* Prueba de manejo de errores
-
----
-
-# Arquitectura general
-
-Frontend → n8n → PostgreSQL → Logs / Reportes
-
----
-
-# Autor
-
-Proyecto académico de Ingeniería de Software.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
