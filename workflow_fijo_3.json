@@ -1,0 +1,176 @@
+{
+    "name": "Ticket Ingest Flow",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "ticket-ingreso",
+                "options": {}
+            },
+            "id": "e0a7f1d5-bc44-46c5-9271-bf1f124be3af",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1.1,
+            "position": [
+                380,
+                240
+            ],
+            "webhookId": "6f2e8790-a541-4ce8-b591-1fa1a8f33198"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "7dc1a9fb-1eaf-4b2a-8cfa-548c78c187be",
+                            "name": "prioridad",
+                            "value": "={{ $json.mensaje.toLowerCase().match(/(urgente|error|caido)/) ? 'alta' : 'normal' }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "c620eabd-e8c1-41ee-8ff0-23058b8d4e41",
+            "name": "Edit Fields",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                600,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "schema": "public",
+                "table": "tickets",
+                "columns": "",
+                "options": {},
+                "mappingMode": "defineBelow",
+                "valueToAssign": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "nombre": "={{ $json.nombre }}",
+                        "correo": "={{ $json.correo }}",
+                        "mensaje": "={{ $json.mensaje }}",
+                        "prioridad": "={{ $json.prioridad }}"
+                    }
+                }
+            },
+            "id": "ad60aeb8-7e3e-460d-9bbf-57171e0ba3eb",
+            "name": "Postgres",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.4,
+            "position": [
+                820,
+                240
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "m11cMInDk71h7X0V",
+                    "name": "Postgres account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "keepOnlySet": true,
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "e21b8ff8-e7c6-48c0-8d5f-9db1e72e81cf",
+                            "name": "myData",
+                            "value": "={{ `[${$now}] INFO - Ticket de ${$json.nombre} | Prioridad: ${$json.prioridad} | Msj: ${$json.mensaje}\n` }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "e7b0aae9-1c73-45a8-981f-7f516d2ca0dd",
+            "name": "Format Log",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                1040,
+                140
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "fileName": "/data/logs.txt",
+                "dataPropertyName": "myData",
+                "options": {
+                    "append": true
+                }
+            },
+            "id": "d04a742a-a926-44b4-8ab3-36c53e8dd2c2",
+            "name": "Read/Write Files from Disk",
+            "type": "n8n-nodes-base.readWriteFile",
+            "typeVersion": 1,
+            "position": [
+                1040,
+                340
+            ]
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Edit Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Edit Fields": {
+            "main": [
+                [
+                    {
+                        "node": "Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Postgres": {
+            "main": [
+                [
+                    {
+                        "node": "Format Log",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Log": {
+            "main": [
+                [
+                    {
+                        "node": "Read/Write Files from Disk",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": true,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "f2ccf1db-e877-44a6-95ba-8b832c3f191b",
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "ae501ef3cc08f8c8574d3febeb92d8f99fac5a4da3ae32ccff868ee3a4049830"
+    },
+    "id": "CGS2KUVrGoQGprKZ"
+}

@@ -1,0 +1,176 @@
+{
+    "id": "CGS2KUVrGoQGprKZ",
+    "name": "Ticket Ingest Flow",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "ticket-ingreso",
+                "options": {}
+            },
+            "id": "ingest-webhook",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ],
+            "webhookId": "6f2e8790-a541-4ce8-b591-1fa1a8f33198"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "set-nombre",
+                            "name": "nombre",
+                            "value": "={{ $json.body ? $json.body.nombre : $json.nombre }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "set-correo",
+                            "name": "correo",
+                            "value": "={{ $json.body ? $json.body.correo : $json.correo }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "set-mensaje",
+                            "name": "mensaje",
+                            "value": "={{ $json.body ? $json.body.mensaje : $json.mensaje }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "set-prioridad",
+                            "name": "prioridad",
+                            "value": "={{ ($json.body ? $json.body.mensaje : $json.mensaje).toLowerCase().match(/(urgente|error|caido)/) ? 'alta' : 'normal' }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "edit-fields",
+            "name": "Edit Fields",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "INSERT INTO tickets (nombre, correo, mensaje, prioridad) VALUES ('{{ $json.nombre }}', '{{ $json.correo }}', '{{ $json.mensaje }}', '{{ $json.prioridad }}')",
+                "options": {}
+            },
+            "id": "postgres-insert",
+            "name": "Postgres",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.4,
+            "position": [
+                400,
+                0
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "LBNB1O2RdYUkGaf0",
+                    "name": "Postgres account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "keepOnlySet": true,
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "log-msg",
+                            "name": "myData",
+                            "value": "={{ `[${$now}] RM-TICKET Recibido: ${$json.nombre} | Prioridad: ${$json.prioridad} | Msj: ${$json.mensaje}\n` }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "format-log",
+            "name": "Format Log",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "fileName": "/data/logs.txt",
+                "dataPropertyName": "myData",
+                "options": {
+                    "append": true
+                }
+            },
+            "id": "file-writer",
+            "name": "Read/Write Files from Disk",
+            "type": "n8n-nodes-base.readWriteFile",
+            "typeVersion": 1,
+            "position": [
+                800,
+                0
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Edit Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Edit Fields": {
+            "main": [
+                [
+                    {
+                        "node": "Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Postgres": {
+            "main": [
+                [
+                    {
+                        "node": "Format Log",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Log": {
+            "main": [
+                [
+                    {
+                        "node": "Read/Write Files from Disk",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "errorWorkflow": "Errores123456789"
+    },
+    "active": true
+}
