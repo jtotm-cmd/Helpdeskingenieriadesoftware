@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: helpdesk-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: helpdesk_user
+      POSTGRES_PASSWORD: helpdesk_password
+      POSTGRES_DB: helpdesk_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  n8n:
+    image: n8nio/n8n
+    container_name: helpdesk-n8n
+    user: root
+    restart: always
+    environment:
+      # Configuración de base de datos para n8n
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=helpdesk_db
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=helpdesk_user
+      - DB_POSTGRESDB_PASSWORD=helpdesk_password
+      # Zona horaria (ajusta si es necesario)
+      - GENERIC_TIMEZONE=America/Mexico_City
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+    volumes:
+      # Persistencia de configuración interna de n8n
+      - ./n8n_data:/root/.n8n
+      # Carpeta local para logs y reportes
+      - ./data:/data
+
+  minio:
+    # Cambiamos la imagen oficial (obsoleta) por la versión segura de Chainguard
+    image: cgr.dev/chainguard/minio:latest
+    container_name: minio_storage
+    ports:
+      - "9000:9000" # API de S3
+      - "9001:9001" # Consola Web
+
+    environment:
+      MINIO_ROOT_USER: totmoran1993@gmail.com
+      MINIO_ROOT_PASSWORD: Whis2026@
+    volumes:
+      - ./minio_data:/data
+    # El comando se mantiene igual para habilitar la consola
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    # Mejora de seguridad: corre como usuario no-root por defecto en esta imagen
+    # user: "65532"
+    user: "0:0"
+    
+  frontend:
+    build:
+      context: ./front-end
+    container_name: helpdesk-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front-end:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - n8n
+
+  frontend-dash:
+    build:
+      context: ./front-end-dash
+    container_name: helpdesk-dashboard
+    ports:
+      - "3001:3000"
+    environment:
+      - DB_USER=helpdesk_user
+      - DB_PASSWORD=helpdesk_password
+      - DB_HOST=postgres
+      - DB_NAME=helpdesk_db
+    volumes:
+      - ./front-end-dash:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - postgres
+
